@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MDO DO ACRO</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+  <h1>📖 MDO DO ACRO</h1>
+  <p>Acompanhamento anual do ministério</p>
+</header>
+
+<main>
+
+  <!-- RESUMO -->
+  <section class="stats">
+    <div>
+      <strong id="totalMembros">0</strong>
+      <span>Membros</span>
+    </div>
+    <div>
+      <strong id="totalVersiculos">0</strong>
+      <span>Total Geral</span>
+    </div>
+  </section>
+
+  <!-- ADICIONAR -->
+  <section class="card">
+    <h2>➕ Novo membro</h2>
+    <form id="formAdd">
+      <input type="text" id="novoNome" placeholder="Nome do membro" required>
+      <button type="submit">Cadastrar</button>
+    </form>
+  </section>
+
+  <!-- LANÇAMENTO -->
+  <section class="card">
+    <h2>✍️ Lançar MDO</h2>
+    <form id="formMDO">
+      <select id="nome" required></select>
+
+      <div class="grid">
+        <input type="number" id="meditacao" placeholder="Meditação" min="0">
+        <input type="number" id="decoracao" placeholder="Decoração" min="0">
+        <input type="number" id="oracao" placeholder="Oração" min="0">
+      </div>
+
+      <button type="submit">Salvar Pontuação</button>
+    </form>
+  </section>
+
+  <!-- RANKING -->
+  <section class="card">
+    <h2>🏆 Ranking anual</h2>
+    <ul id="ranking"></ul>
+  </section>
+
+</main>
+
+<script src="script.js"></script>
+</body>
+</html>
