@@ -1,153 +1,223 @@
-import { db, ref, onValue, push, update } from "./firebase.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
 
-const formAdd = document.getElementById("formAdd");
-const novoNomeInput = document.getElementById("novoNome");
-
-const formMDO = document.getElementById("formMDO");
-const selectNome = document.getElementById("nome");
-
-const rankingEl = document.getElementById("ranking");
-
-const totalMembrosEl = document.getElementById("totalMembros");
-const totalVersiculosEl = document.getElementById("totalVersiculos");
-
-let membros = [];
-
-/* CARREGAR DADOS ONLINE */
-
-db.ref("membros").on("value", snapshot => {
-
-membros = [];
-
-snapshot.forEach(child => {
-
-membros.push({
-id: child.key,
-...child.val()
-});
-
-});
-
-atualizarSelect();
-renderizarRanking();
-
-});
-
-/* SELECT */
-
-function atualizarSelect(){
-
-selectNome.innerHTML="";
-
-membros.forEach(m=>{
-
-const option=document.createElement("option");
-
-option.value=m.id;
-option.textContent=m.nome;
-
-selectNome.appendChild(option);
-
-});
-
+import {
+getDatabase,
+ref,
+push,
+set,
+onValue,
+update
 }
+from "https://www.gstatic.com/firebasejs/12.9.0/firebase-database.js";
 
-/* RANKING */
 
-function renderizarRanking(){
+// CONFIG FIREBASE
 
-rankingEl.innerHTML="";
+const firebaseConfig = {
 
-let totalGeral=0;
+apiKey: "AIzaSyCUNjxXY7-qq961qv0MudKgCcrMchVVzQQ",
 
-membros
-.sort((a,b)=>(b.m+b.d+b.o)-(a.m+a.d+a.o))
-.forEach((m,index)=>{
+authDomain: "mdo-acro.firebaseapp.com",
 
-const total=m.m+m.d+m.o;
+databaseURL: "https://mdo-acro-default-rtdb.firebaseio.com",
 
-totalGeral+=total;
+projectId: "mdo-acro",
 
-const li=document.createElement("li");
+storageBucket: "mdo-acro.firebasestorage.app",
 
-li.innerHTML=`
-<strong>${index+1}º ${m.nome}</strong><br>
-M${m.m} - D${m.d} - O${m.o}
-`;
+messagingSenderId: "957477543792",
 
-rankingEl.appendChild(li);
+appId: "1:957477543792:web:8009e8d70c2cc4e295f9b5"
+
+};
+
+
+// INICIAR FIREBASE
+
+const app = initializeApp(firebaseConfig);
+
+const db = getDatabase(app);
+
+
+
+let pessoas = {};
+
+
+
+const pessoasRef = ref(db,"pessoas");
+
+
+
+onValue(pessoasRef,(snapshot)=>{
+
+pessoas = snapshot.val() || {};
+
+atualizarLista();
+
+atualizarRanking();
 
 });
 
-totalMembrosEl.textContent=membros.length;
 
-totalVersiculosEl.textContent=totalGeral;
 
-}
+window.adicionarPessoa = function(){
 
-/* ADICIONAR */
+let nome = document.getElementById("novoNome").value;
 
-formAdd.addEventListener("submit",e=>{
+if(nome=="")return;
 
-e.preventDefault();
 
-const nome=novoNomeInput.value.trim();
 
-if(!nome) return;
+let novaRef = push(pessoasRef);
 
-const existe=membros.some(m=>m.nome.toLowerCase()==nome.toLowerCase());
-
-if(existe){
-
-alert("Nome já existe");
-
-return;
-
-}
-
-db.ref("membros").push({
+set(novaRef,{
 
 nome:nome,
-m:0,
-d:0,
-o:0
+
+M:0,
+
+D:0,
+
+O:0
 
 });
 
-novoNomeInput.value="";
+
+
+document.getElementById("novoNome").value="";
+
+};
+
+
+
+window.lancarMDO = function(){
+
+let id = document.getElementById("nomePessoa").value;
+
+if(!id)return;
+
+
+
+let M = parseInt(document.getElementById("meditacao").value)||0;
+
+let D = parseInt(document.getElementById("decoracao").value)||0;
+
+let O = parseInt(document.getElementById("oracao").value)||0;
+
+
+
+let pessoa = pessoas[id];
+
+
+
+update(ref(db,"pessoas/"+id),{
+
+M:pessoa.M+M,
+
+D:pessoa.D+D,
+
+O:pessoa.O+O
 
 });
 
-/* LANÇAR */
 
-formMDO.addEventListener("submit",e=>{
 
-e.preventDefault();
+document.getElementById("meditacao").value="";
 
-const id=selectNome.value;
+document.getElementById("decoracao").value="";
 
-const med=parseInt(meditacao.value)||0;
-const dec=parseInt(decoracao.value)||0;
-const ora=parseInt(oracao.value)||0;
+document.getElementById("oracao").value="";
 
-if(med==0 && dec==0 && ora==0){
+};
 
-alert("Digite valores");
 
-return;
+
+function atualizarLista(){
+
+let select = document.getElementById("nomePessoa");
+
+select.innerHTML="";
+
+
+
+for(let id in pessoas){
+
+let option=document.createElement("option");
+
+option.value=id;
+
+option.innerText=pessoas[id].nome;
+
+select.appendChild(option);
 
 }
 
-const pessoa=membros.find(m=>m.id==id);
+}
 
-db.ref("membros/"+id).update({
 
-m:pessoa.m+med,
-d:pessoa.d+dec,
-o:pessoa.o+ora
+
+function atualizarRanking(){
+
+let rankingDiv=document.getElementById("ranking");
+
+rankingDiv.innerHTML="";
+
+
+
+let lista = Object.entries(pessoas);
+
+
+
+lista.sort((a,b)=>{
+
+let totalA=a[1].M+a[1].D+a[1].O;
+
+let totalB=b[1].M+b[1].D+b[1].O;
+
+return totalB-totalA;
 
 });
 
-formMDO.reset();
+
+
+let pos=1;
+
+
+
+lista.forEach(([id,pessoa])=>{
+
+let card=document.createElement("div");
+
+card.className="card";
+
+
+
+card.innerHTML=`
+
+<div>
+
+<span class="posicao">#${pos}</span>
+
+${pessoa.nome}
+
+</div>
+
+<div>
+
+M${pessoa.M} - D${pessoa.D} - O${pessoa.O}
+
+</div>
+
+`;
+
+
+
+rankingDiv.appendChild(card);
+
+
+
+pos++;
 
 });
+
+}
