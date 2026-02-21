@@ -1,3 +1,5 @@
+import { db, ref, onValue, push, update } from "./firebase.js";
+
 const formAdd = document.getElementById("formAdd");
 const novoNomeInput = document.getElementById("novoNome");
 
